@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Google Maps Street View</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        #street-view {
+            height: 100%;
+            width: 100%;
+        }
+
+        /* Ensure the navbar appears above the street-view */
+        #navbar {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            z-index: 1000;
+            /* Add a high z-index to ensure the navbar is on top */
+        }
+
+        #navbar button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+
+        #navbar button:hover {
+            background-color: #45a049;
+        }
+
+        /* Style for the map iframe */
+        #map-iframe {
+            position: fixed;
+            bottom: 10px;
+            right: 0.5px;
+            width: 35vh;
+            height: 35vh;
+            border: 2px solid #333;
+            z-index: 999;
+            /* Ensure the map iframe is above other elements */
+            transition: width 0.3s, height 0.3s;
+            /* Smooth transition for resizing */
+        }
+
+        #map-iframe:hover {
+            width: 60vh;
+            height: 60vh;
+        }
+    </style>
+    <script
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDhXyJAWpWaYAyYI4y6GcjLd90soWxaDVg&callback=initStreetView"
+        async defer></script>
+    <script>
+        // Embed the landmarks data directly in the HTML
+        const landmarks = [
+            { "name": "Smalley Center for Housing Administration", "lat": 40.426944, "lng": -86.923056 },
+            { "name": "FRANKLIN LEVERING CARY QUADRANGLE", "lat": 40.432049, "lng": -86.917973 },
+            { "name": "1bowl @ Meredith", "lat": 40.426639, "lng": -86.923013 },
+            { "name": "All American Dining Room", "lat": 40.4319143, "lng": -86.918194 },
+            { "name": "Earhart Dining Court", "lat": 40.425838, "lng": -86.924706 },
+            { "name": "Ford Dining Court", "lat": 40.432135, "lng": -86.919633 },
+            { "name": "The Gathering Place - Featuring Sushi Boss", "lat": 40.426446, "lng": -86.923184 },
+            { "name": "Hillenbrand Dining Court", "lat": 40.426548, "lng": -86.926682 },
+            { "name": "Pete's Za at Meredith", "lat": 40.42661, "lng": -86.922846 },
+            { "name": "Wiley Dining Court", "lat": 40.428615, "lng": -86.921041 },
+            { "name": "Windsor Dining Court", "lat": 40.426785, "lng": -86.920921 },
+            { "name": "AMELIA EARHART RESIDENCE HALL", "lat": 40.425838, "lng": -86.925106 }
+            // Add more landmarks as needed
+        ];
+
+        function getRandomLandmarkLocation() {
+            const randomIndex = Math.floor(Math.random() * landmarks.length);
+            const selectedLandmark = landmarks[randomIndex];
+
+            console.log("Selected Landmark: " + selectedLandmark.name);
+            console.log("Latitude: " + selectedLandmark.lat + ", Longitude: " + selectedLandmark.lng);
+
+            return { lat: selectedLandmark.lat, lng: selectedLandmark.lng };
+        }
+
+        function initStreetView() {
+            const location = getRandomLandmarkLocation(); // Generate a random landmark location
+
+            var panorama = new google.maps.StreetViewPanorama(
+                document.getElementById('street-view'), {
+                position: location,
+                pov: {
+                    heading: 34,
+                    pitch: 10
+                },
+                zoom: 1
+            });
+        }
+    </script>
+</head>
+
+<body>
+    <div id="street-view"></div>
+    <iframe id="map-iframe" src="/map/"></iframe>
+    <div id="navbar">
+        
+    </div>
+    <script>
+        function navigateToMap() {
+            window.location.href = "/map/";
+        }
+    </script>
+</body>
+
+</html>

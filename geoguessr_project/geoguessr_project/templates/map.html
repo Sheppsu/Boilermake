@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Map</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://js.arcgis.com/4.21/esri/themes/light/main.css">
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+
+        #navbar {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 10px;
+        }
+
+        #navbar button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+
+        #navbar button:hover {
+            background-color: #45a049;
+        }
+    </style>
+    <script src="https://js.arcgis.com/4.21/"></script>
+</head>
+
+<body>
+    <div id="map"></div>
+    <div id="navbar">
+        <span id="coordinates"></span>
+        <button onclick="submitCoordinates()">Submit</button>
+    </div>
+    <script>
+        require([
+            "esri/Map",
+            "esri/views/MapView",
+            "esri/WebMap",
+            "esri/Graphic",
+            "esri/geometry/Point"
+        ], function (Map, MapView, WebMap, Graphic, Point) {
+            var webmap = new WebMap({
+                portalItem: { // autocasts as new PortalItem()
+                    id: "f8c18c54bcc14eff92a48c1ad1688e8e"
+                }
+            });
+
+            var view = new MapView({
+                container: "map",
+                map: webmap,
+                // center: [-118.80500, 34.02700], // Longitude, Latitude
+                zoom: 15 // Zoom level
+            });
+
+            // Ensure selected layers are displayed
+            webmap.when(function () {
+                webmap.layers.forEach(function (layer) {
+                    // Check the layer title or id and add only selected layers
+                    if (layer.title === "Layer Name 1" || layer.title === "Layer Name 2") {
+                        if (!layer.visible) {
+                            layer.visible = true;
+                        }
+                        view.map.add(layer);
+                    }
+                });
+            });
+
+            // Disable mouse wheel zooming
+            // view.on("mouse-wheel", function (event) {
+            //     event.stopPropagation();
+            // });
+
+            // Add a click event to the view
+            view.on("click", function (event) {
+                // Stop the propagation of the click event
+                event.stopPropagation();
+
+                // Get the coordinates of the click
+                var point = new Point({
+                    longitude: event.mapPoint.longitude,
+                    latitude: event.mapPoint.latitude
+                });
+
+                // Log the coordinates
+                console.log("Longitude: " + point.longitude + ", Latitude: " + point.latitude);
+
+                // Display the coordinates in the navbar
+                document.getElementById('coordinates').textContent = "Longitude: " + point.longitude.toFixed(4) + ", Latitude: " + point.latitude.toFixed(4);
+
+                // Show the navbar
+                document.getElementById('navbar').style.display = 'block';
+
+                // Create a graphic for the point
+                var markerSymbol = {
+                    type: "simple-marker",
+                    color: [226, 119, 40], // Orange
+                    outline: {
+                        color: [255, 255, 255], // White
+                        width: 2
+                    }
+                };
+
+                var pointGraphic = new Graphic({
+                    geometry: point,
+                    symbol: markerSymbol
+                });
+
+                // Clear existing graphics
+                view.graphics.removeAll();
+
+                // Add the graphic to the view
+                view.graphics.add(pointGraphic);
+            });
+        });
+
+        function submitCoordinates() {
+            var coordinates = document.getElementById('coordinates').textContent;
+            alert("Coordinates submitted: " + coordinates);
+            // Hide the navbar after submission
+            document.getElementById('navbar').style.display = 'none';
+        }
+    </script>
+</body>
+
+</html>
