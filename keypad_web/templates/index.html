@@ -5,10 +5,13 @@
     <meta charset="UTF-8">
     <title>test</title>
 
-    <link type="text/css" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/styles.css' %}">
 </head>
     <body>
-        <button id="the-button">press me</button>
+        <button id="connect-button">Connect device</button>
+        <button id="disconnect-button">Disconnect device</button>
+        <h1>Connection state: <span id="connection-state">not connected</span></h1>
+        <h1>Key 1: <span><button id="key1-button" class="key-btn"></button></span></h1>
         <script type="module">
             import { run } from "{% static 'js/test.js' %}";
             run();
