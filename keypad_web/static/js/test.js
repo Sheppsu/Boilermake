@@ -1,10 +1,6 @@
 const connectButton = document.getElementById("connect-btn");
 const disconnectButton = document.getElementById("disconnect-btn");
 const connectionState = document.getElementById("connection-state");
-const key1Btn = document.getElementById("key1-btn");
-const key2Btn = document.getElementById("key2-btn");
-const key3Btn = document.getElementById("key3-btn");
-const key4Btn = document.getElementById("key4-btn");
 const keypadRow = document.getElementById("keypad-row");
 
 
@@ -20,7 +16,9 @@ class Connection {
       key1: null,
       key2: null,
       key3: null,
-      key4: null
+      key4: null,
+      key5: null,
+      key6: null
     };
 
     port.addEventListener("disconnect", () => {
@@ -130,14 +128,53 @@ class Connection {
 
     const data = new Uint8Array(1);
   }
+
+  async setKey(id, key) {
+    this.settings[`key${id}`] = key;
+    // TODO: send setting change
+  }
 }
 
+class KeyButton {
+  clickElm;
+  displayElm;
+  id;
+  changing;
+  oldValue;
 
-function applySettings(settings) {
-  key1Btn.innerText = settings.key1 === null ? "" : settings.key1;
-  key2Btn.innerText = settings.key2 === null ? "" : settings.key2;
-  key3Btn.innerText = settings.key3 === null ? "" : settings.key3;
-  key4Btn.innerText = settings.key4 === null ? "" : settings.key4;
+  constructor(clickElm, displayElm, id) {
+    this.clickElm = clickElm;
+    this.displayElm = displayElm;
+    this.id = id;
+    this.changing = false;
+    this.oldValue = "";
+
+    clickElm.addEventListener("click", () => {
+      for (const btn of keyBtns) {
+        btn.cancelChange();
+      }
+
+      this.changing = true;
+      this.oldValue = this.displayElm.innerText;
+      this.displayElm.innerText = "...";
+    });
+  }
+
+  cancelChange() {
+    this.displayElm.innerText = this.oldValue;
+    this.changing = false;
+  }
+
+  onKeyPress(key) {
+    if (!this.changing) {
+      return;
+    }
+
+    this.oldValue = key;
+    this.cancelChange();
+
+    connection.setKey(this.id, key);
+  }
 }
 
 function onConnectionOpened() {
@@ -152,10 +189,19 @@ function onConnectionClosed() {
 
 
 var connection = null;
+const keyBtns = [];
 
 export function run() {
   console.log("running");
 
+  // initialized KeyButton objects
+  for (let i=1; i<7; i++) {
+    const clickElm = document.getElementById(`key${i}-btn`);
+    const displayElm = document.getElementById(`key${i}-display`);
+    keyBtns.push(new KeyButton(clickElm, displayElm ?? clickElm, i));
+  }
+
+  // connecting a device event
   connectButton.addEventListener("click", () => {
     navigator.serial
       .requestPort()
@@ -170,10 +216,18 @@ export function run() {
       });
   });
 
+  // disconnecting a device event
   disconnectButton.addEventListener("click", () => {
     if (connection !== null) {
       connection.close();
       connection = null;
+    }
+  });
+
+  // clicking a key button
+  document.addEventListener("keydown", (e) => {
+    for (const keyBtn of keyBtns) {
+      keyBtn.onKeyPress(e.key);
     }
   });
 }

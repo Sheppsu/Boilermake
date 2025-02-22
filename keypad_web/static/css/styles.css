@@ -78,6 +78,8 @@ hr {
     width: 50%;
     height: 100%;
 
+    position: relative;
+
     display: flex;
     flex-direction: column;
 
@@ -141,6 +143,26 @@ hr {
     -webkit-user-select: none;
 
     transition: background-color 0.2s;
+}
+
+.keypad-key-container-bottom-row {
+    position: absolute;
+    top: 40%;
+
+    font-size: 50px;
+
+    user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -webkit-user-select: none;
+}
+
+.keypad-key-container-bottom-row.left {
+    left: 50%;
+}
+
+.keypad-key-container-bottom-row.right {
+    right: 50%;
 }
 
 @media (max-width: 800px) {
