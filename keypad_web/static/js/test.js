@@ -146,7 +146,7 @@ class Connection {
     const data = new Uint8Array(3);
     data[0] = 0x01;
     data[1] = id;
-    data[2] = key.toLowerCase().charCodeAt(0);
+    data[2] = convertToKeyCode(key.toLowerCase());
 
     await this.writer.write(data);
   }
@@ -219,6 +219,10 @@ class KeyButton {
   }
 }
 
+function convertToKeyCode(key) {
+  return 0;
+}
+
 function onConnectionOpened() {
   keypadRow.classList.remove("hidden");
   disconnectBtn.classList.remove("hidden");
@@ -245,6 +249,8 @@ export function run() {
 
   // connecting a device event
   connectBtn.addEventListener("click", () => {
+    connectBtn.innerText = "Connecting...";
+    connectBtn.classList.add("disabled");
     navigator.serial
       .requestPort()
       .then((port) => {
@@ -255,6 +261,8 @@ export function run() {
       })
       .catch((e) => {
         console.log(e);
+        connectBtn.innerText = "Connect a device";
+        connectBtn.classList.remove("disabled");
       });
   });
 
@@ -288,16 +296,19 @@ export function run() {
     }
 
     saveBtn.innerText = "Saving...";
+    saveBtn.classList.add("disabled");
     connection.saveSettings().then(() => {
       saveBtn.innerText = "Saved!";
       setTimeout(() => {
         saveBtn.innerText = "Save";
+        saveBtn.classList.remove("disabled");
       }, 3000);
     }).catch((e) => {
       console.log(e);
       saveBtn.innerText = "Error...";
       setTimeout(() => {
         saveBtn.innerText = "Save";
+        saveBtn.classList.remove("disabled");
       }, 3000);
     });
   });

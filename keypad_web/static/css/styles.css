@@ -206,6 +206,10 @@ hr {
     cursor: pointer;
 }
 
+.std-button.disabled:hover {
+    cursor: default;
+}
+
 .std-button.green {
     background-color: #51AE5C;
 }
@@ -214,12 +218,20 @@ hr {
     background-color: #73BF7C;
 }
 
+.std-button.green.disabled:hover {
+    background-color: #51AE5C;
+}
+
 .std-button.red {
     background-color: #B94A46;
 }
 
 .std-button.red:hover {
     background-color: #C76E6B;
+}
+
+.std-button.red.disabled:hover {
+    background-color: #B94A46;
 }
 
 .hidden {
