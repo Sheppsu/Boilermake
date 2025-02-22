@@ -1,0 +1,28 @@
+<svg width="141" height="100" xmlns="http://www.w3.org/2000/svg">
+<!--    <style>-->
+<!--        @import url("https://fonts.googleapis.com/css?family=Poppins");-->
+
+<!--        .key-text {-->
+<!--            font-family: 'Poppins', sans-serif;-->
+<!--            font-size: 15px;-->
+<!--            fill: white;-->
+
+<!--            user-select: none;-->
+<!--            -moz-user-select: none;-->
+<!--            -ms-user-select: none;-->
+<!--            -webkit-user-select: none;-->
+<!--        }-->
+
+<!--        .key-container {-->
+<!--            fill: black;-->
+<!--        }-->
+
+<!--        .key-container:hover {-->
+<!--            fill: #222;-->
+<!--        }-->
+<!--    </style>-->
+    <path fill="#333" d="M13.523 99 L127.539 99 L139.496 85.477 L139.496 61.48 L117.735 4.692 L22.761 4.692 L1 61.48 L 1 85.477"></path>
+<!--    <path fill="#666" d="M30.048 5.692 L110.449 5.692 L110.449 29.902 L30.048 29.902"></path>-->
+<!--    <path class="key-container" d="M34.648 10.292 L48.848 10.292 L48.848 24.492 L34.648 24.492"></path>-->
+<!--    <text x="36.648" y="23.492" class="key-text">A</text>-->
+</svg>
