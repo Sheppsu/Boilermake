@@ -1,81 +1,12 @@
-const connectButton = document.getElementById("connect-button");
-const disconnectButton = document.getElementById("disconnect-button");
+const connectButton = document.getElementById("connect-btn");
+const disconnectButton = document.getElementById("disconnect-btn");
 const connectionState = document.getElementById("connection-state");
-const key1Btn = document.getElementById("key1-button");
+const key1Btn = document.getElementById("key1-btn");
+const key2Btn = document.getElementById("key2-btn");
+const key3Btn = document.getElementById("key3-btn");
+const key4Btn = document.getElementById("key4-btn");
+const keypadRow = document.getElementById("keypad-row");
 
-// async function readLoop(port) {
-//   let state = false;
-//   let counter = 0;
-//
-//   while (port.readable) {
-//     const reader = port.readable.getReader();
-//     try {
-//       while (true) {
-//         const { value, done } = await reader.read();
-//         if (done) {
-//           console.log("reader is done")
-//           break;
-//         }
-//
-//         const press1State = parseInt(new TextDecoder("utf-8").decode(value).split(",")[0]);
-//         if (press1State == 10 && state) {
-//           state = false;
-//         } else if (press1State > 10 && !state) {
-//           state = true;
-//           counter++;
-//           pressCount.innerText = counter;
-//         }
-//       }
-//     } catch (error) {
-//       // Handle |error|...
-//     } finally {
-//       reader.releaseLock();
-//     }
-//   }
-// }
-//
-// async function doWrite(port, writer) {
-//   if (!port.writable) {
-//     console.log("No longer writable");
-//     return;
-//   }
-//
-//   writer.write(new TextEncoder().encode("test"));
-//
-//   setTimeout(doWrite, 1000, port, writer);
-// }
-//
-// async function writeLoop(port) {
-//   const writer = port.writable.getWriter();
-//   setTimeout(doWrite, 1000, port, writer);
-// }
-
-var connection = null;
-
-export function run() {
-  console.log("running");
-
-  connectButton.addEventListener("click", () => {
-    navigator.serial
-      .requestPort()
-      .then((port) => {
-        if (port !== null) {
-          connection = new Connection(port);
-          connection.open();
-        }
-      })
-      .catch((e) => {
-        console.log(e);
-      });
-  });
-
-  disconnectButton.addEventListener("click", () => {
-    if (connection !== null) {
-      connection.close();
-      connection = null;
-    }
-  });
-}
 
 class Connection {
   port;
@@ -87,6 +18,9 @@ class Connection {
     this.port = port;
     this.settings = {
       key1: null,
+      key2: null,
+      key3: null,
+      key4: null
     };
 
     port.addEventListener("disconnect", () => {
@@ -94,6 +28,14 @@ class Connection {
       connectionState.innerText = "disconnected";
       this.port = null;
     });
+  }
+
+  canWrite() {
+    return this.writer === undefined;
+  }
+
+  canRead() {
+    return this.reader === undefined;
   }
 
   async open() {
@@ -109,6 +51,8 @@ class Connection {
     console.log("connected")
     connectionState.innerText = "connected";
 
+    onConnectionOpened();
+
     this.reader = this.port.readable.getReader();
     this.writer = this.port.writable.getWriter();
 
@@ -117,13 +61,16 @@ class Connection {
 
   close() {
     this.closeReader();
+    this.closeWriter();
     if (this.port !== undefined) {
       this.port.close();
     }
+
+    onConnectionClosed();
   }
 
   async read() {
-    if (this.reader === undefined) {
+    if (this.canRead()) {
       console.log("Cannot read, reader is undefined");
       return;
     }
@@ -158,19 +105,75 @@ class Connection {
     this.reader = undefined;
   }
 
+  closeWriter() {
+    if (this.writer === undefined) {
+      return;
+    }
+    this.writer.releaseLock();
+    this.writer = undefined;
+  }
+
   async sendSettings() {
-    if (!this.port.writable) {
-      console.log("Not writable");
+    if (!this.canWrite()) {
       return;
     }
 
     const data = new Uint8Array(1);
     data[0] = this.settings.key1.charCodeAt(0);
-
-    this.writer.write(data);
+    await this.writer.write(data);
   }
 
-  setKey1(character) {
-    this.settings.key1 = character;
+  async requestSettings() {
+    if (!this.canWrite()) {
+      return;
+    }
+
+    const data = new Uint8Array(1);
   }
+}
+
+
+function applySettings(settings) {
+  key1Btn.innerText = settings.key1 === null ? "" : settings.key1;
+  key2Btn.innerText = settings.key2 === null ? "" : settings.key2;
+  key3Btn.innerText = settings.key3 === null ? "" : settings.key3;
+  key4Btn.innerText = settings.key4 === null ? "" : settings.key4;
+}
+
+function onConnectionOpened() {
+  keypadRow.classList.remove("hidden");
+  disconnectButton.classList.remove("hidden");
+}
+
+function onConnectionClosed() {
+  keypadRow.classList.add("hidden");
+  disconnectButton.classList.add("hidden");
+}
+
+
+var connection = null;
+
+export function run() {
+  console.log("running");
+
+  connectButton.addEventListener("click", () => {
+    navigator.serial
+      .requestPort()
+      .then((port) => {
+        if (port !== null) {
+          connection = new Connection(port);
+          connection.open();
+        }
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+  });
+
+  disconnectButton.addEventListener("click", () => {
+    if (connection !== null) {
+      connection.close();
+      connection = null;
+    }
+  });
 }
