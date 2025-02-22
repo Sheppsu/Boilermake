@@ -16,6 +16,7 @@
             <div class="row-container">
                 <div id="connect-btn" class="std-button green">Connect a device</div>
                 <div id="disconnect-btn" class="std-button red">Disconnect device</div>
+                <div id="save-btn" class="std-button green">Save</div>
             </div>
             <hr/>
             <div id="keypad-row" class="row-container">
@@ -48,9 +49,8 @@
                     </div>
                 </div>
             </div>
-            <div class="row-container">
-                <!-- Put other settings here -->
-            </div>
+            <h1>Touch threshold: <span id="touch-threshold-display"></span></h1>
+            <input id="touch-threshold-input" type="range" min="0" max="100">
         </div>
         <script type="module">
             import { run } from "{% static 'js/test.js' %}";

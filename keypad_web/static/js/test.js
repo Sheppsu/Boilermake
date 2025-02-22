@@ -1,7 +1,10 @@
-const connectButton = document.getElementById("connect-btn");
-const disconnectButton = document.getElementById("disconnect-btn");
+const connectBtn = document.getElementById("connect-btn");
+const disconnectBtn = document.getElementById("disconnect-btn");
+const saveBtn = document.getElementById("save-btn");
 const connectionState = document.getElementById("connection-state");
 const keypadRow = document.getElementById("keypad-row");
+const touchThresholdInput = document.getElementById("touch-threshold-input");
+const touchThresholdDisplay = document.getElementById("touch-threshold-display");
 
 
 class Connection {
@@ -18,7 +21,8 @@ class Connection {
       key3: null,
       key4: null,
       key5: null,
-      key6: null
+      key6: null,
+      threshold: null
     };
 
     port.addEventListener("disconnect", () => {
@@ -127,11 +131,49 @@ class Connection {
     }
 
     const data = new Uint8Array(1);
+    data[0] = 0x00;
+
+    await this.writer.write(data);
   }
 
   async setKey(id, key) {
+    if (!this.canWrite()) {
+      return;
+    }
+
     this.settings[`key${id}`] = key;
-    // TODO: send setting change
+
+    const data = new Uint8Array(3);
+    data[0] = 0x01;
+    data[1] = id;
+    data[2] = key.toLowerCase().charCodeAt(0);
+
+    await this.writer.write(data);
+  }
+
+  async setThreshold(value) {
+    if (!this.canWrite()) {
+      return;
+    }
+
+    this.settings.threshold = value;
+
+    const data = new Uint8Array(2)
+    data[0] = 0x02;
+    data[1] = value;
+
+    await this.writer.write(data);
+  }
+
+  async saveSettings() {
+    if (!this.canWrite()) {
+      return;
+    }
+
+    const data = new Uint8Array(1);
+    data[0] = 0x03;
+
+    await this.writer.write(data);
   }
 }
 
@@ -179,12 +221,12 @@ class KeyButton {
 
 function onConnectionOpened() {
   keypadRow.classList.remove("hidden");
-  disconnectButton.classList.remove("hidden");
+  disconnectBtn.classList.remove("hidden");
 }
 
 function onConnectionClosed() {
   keypadRow.classList.add("hidden");
-  disconnectButton.classList.add("hidden");
+  disconnectBtn.classList.add("hidden");
 }
 
 
@@ -202,7 +244,7 @@ export function run() {
   }
 
   // connecting a device event
-  connectButton.addEventListener("click", () => {
+  connectBtn.addEventListener("click", () => {
     navigator.serial
       .requestPort()
       .then((port) => {
@@ -217,7 +259,7 @@ export function run() {
   });
 
   // disconnecting a device event
-  disconnectButton.addEventListener("click", () => {
+  disconnectBtn.addEventListener("click", () => {
     if (connection !== null) {
       connection.close();
       connection = null;
@@ -229,5 +271,34 @@ export function run() {
     for (const keyBtn of keyBtns) {
       keyBtn.onKeyPress(e.key);
     }
+  });
+
+  // handle inputs to threshold slider
+  touchThresholdInput.addEventListener("input", (e) => {
+    touchThresholdDisplay.innerText = touchThresholdInput.value;
+  });
+  touchThresholdInput.addEventListener("change", () => {
+    connection.setThreshold(touchThresholdInput.value);
+  });
+
+  // clicking the save button
+  saveBtn.addEventListener("click", (e) => {
+    if (saveBtn.innerText !== "Save") {
+      return;
+    }
+
+    saveBtn.innerText = "Saving...";
+    connection.saveSettings().then(() => {
+      saveBtn.innerText = "Saved!";
+      setTimeout(() => {
+        saveBtn.innerText = "Save";
+      }, 3000);
+    }).catch((e) => {
+      console.log(e);
+      saveBtn.innerText = "Error...";
+      setTimeout(() => {
+        saveBtn.innerText = "Save";
+      }, 3000);
+    });
   });
 }

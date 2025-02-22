@@ -71,7 +71,7 @@ hr {
     height: 60.22%;
     
     display: flex;
-    flex-display: row;
+    flex-direction: row;
 }
 
 .keypad-row-bottom-container-half {
@@ -172,7 +172,7 @@ hr {
 }
 
 .keypad-key-container:hover {
-    background-color: #333;
+    background-color: #444;
     cursor: pointer;
 }
 
