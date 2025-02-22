@@ -226,11 +226,17 @@ function convertToKeyCode(key) {
 function onConnectionOpened() {
   keypadRow.classList.remove("hidden");
   disconnectBtn.classList.remove("hidden");
+  saveBtn.classList.remove("hidden");
+  touchThresholdInput.classList.remove("hidden");
+  touchThresholdDisplay.classList.remove("hidden");
 }
 
 function onConnectionClosed() {
   keypadRow.classList.add("hidden");
   disconnectBtn.classList.add("hidden");
+  saveBtn.classList.add("hidden");
+  touchThresholdInput.classList.add("hidden");
+  touchThresholdDisplay.classList.add("hidden");
 }
 
 
