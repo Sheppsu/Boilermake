@@ -8,6 +8,22 @@ void readConfig() {
   doWeNeedToRead = 0;
 }
 
+void defaultSettings() {
+  EEPROM.write(0, 'z');
+  EEPROM.write(1, 'x');
+  EEPROM.write(2, KEY_F2);
+  EEPROM.write(3, KEY_F2);
+  EEPROM.write(4, 'c');
+  EEPROM.write(5, KEY_ESC);
+  EEPROM.write(6, 5);
+  EEPROM.write(7, 0b000);
+  EEPROM.write(8, 0b000);
+  EEPROM.write(9, 0b100);
+  EEPROM.write(10, 0b000);
+  EEPROM.write(11, 0b000);
+  EEPROM.write(12, 0b000);
+}
+
 void sendConfig() {
   int addr = 0;
   while(addr < 12) {
@@ -79,9 +95,12 @@ void settingsMode() {
     }
     else if (command == "exit") {
       //same comment as save command
-      Serial.print("see you next time");
-      Serial.flush();
+      //Serial.print("see you next time");
+      //Serial.flush();
       stillSetting = 0;
+    }
+    else if (command == "default") {
+      defaultSettings();
     }
     else {
       emptySerial();
@@ -91,13 +110,13 @@ void settingsMode() {
 
 void doWeChangeSettings() {
   if (Serial.available()) {
-    String start = Serial.readString();
+    String start = Serial.readStringUntil('.');
     start.trim();
     if (start == "change settings") {
       sendConfig();
       Serial.flush();
       settingsMode();
-      emptySerial();
+      //emptySerial();
       Serial.flush();
       doWeNeedToRead = 1;
     }
