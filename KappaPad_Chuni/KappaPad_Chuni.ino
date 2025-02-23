@@ -92,19 +92,19 @@ void loop() {
   key3.keyUpdate();
   key4.keyUpdate();
 
-  Serial.print("\n");
-  Serial.print(" L: ");
-  Serial.print(keyLeft.sample);
-  Serial.print(" R: ");
-  Serial.print(keyRight.sample);
-  Serial.print(" 1: ");
-  Serial.print(key1.sample);
-  Serial.print(" 2: ");
-  Serial.print(key2.sample);
-  Serial.print(" 3: ");
-  Serial.print(key3.sample);
-  Serial.print(" 4: ");
-  Serial.print(key4.sample);
+  // Serial.print("\n");
+  // Serial.print(" L: ");
+  // Serial.print(keyLeft.sample);
+  // Serial.print(" R: ");
+  // Serial.print(keyRight.sample);
+  // Serial.print(" 1: ");
+  // Serial.print(key1.sample);
+  // Serial.print(" 2: ");
+  // Serial.print(key2.sample);
+  // Serial.print(" 3: ");
+  // Serial.print(key3.sample);
+  // Serial.print(" 4: ");
+  // Serial.print(key4.sample);
   
   doWeChangeSettings();
 }
