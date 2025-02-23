@@ -15,16 +15,16 @@
             <hr/>
             <div class="row-container wrap">
                 <div id="connect-btn" class="std-button green">Connect a device</div>
-                <div id="disconnect-btn" class="std-button red">Disconnect device</div>
-                <div id="save-btn" class="std-button green">Save</div>
+                <div id="disconnect-btn" class="std-button red hidden">Disconnect device</div>
+                <div id="save-btn" class="std-button green hidden">Save</div>
             </div>
-            <div id="import-export-container" class="row-container wrap">
+            <div id="import-export-container" class="row-container wrap hidden">
                 <input id="import-input" type="text" class="std-text-input" placeholder="Settings code">
                 <div id="import-btn" class="std-button blue">Import</div>
                 <div id="export-btn" class="std-button blue">Export</div>
             </div>
             <hr/>
-            <div id="keypad-row" class="row-container">
+            <div id="keypad-row" class="row-container hidden">
                 <div id="keypad-container">
                     <div class="keypad-row-top">
                         <div id="key1-btn" class="keypad-key-container"></div>
@@ -54,8 +54,10 @@
                     </div>
                 </div>
             </div>
-            <h1>Touch threshold: <span id="touch-threshold-display"></span></h1>
-            <input id="touch-threshold-input" type="range" min="0" max="100">
+            <div id="threshold-container" class="hidden" style="width: 100%;">
+                <h1>Touch threshold: <span id="touch-threshold-display"></span></h1>
+                <input id="touch-threshold-input" type="range" min="0" max="50">
+            </div>
         </div>
         <script type="module">
             import { run } from "{% static 'js/main.js' %}";

@@ -4,12 +4,14 @@ const saveBtn = document.getElementById("save-btn");
 const exportBtn = document.getElementById("export-btn");
 const importBtn = document.getElementById("import-btn");
 const importInput = document.getElementById("import-input");
-const connectionState = document.getElementById("connection-state");
 const keypadRow = document.getElementById("keypad-row");
 const touchThresholdInput = document.getElementById("touch-threshold-input");
 const touchThresholdDisplay = document.getElementById("touch-threshold-display");
 const importExportContainer = document.getElementById("import-export-container");
+const thresholdContainer = document.getElementById("threshold-container");
 
+
+const TARGET_NAMES = ["k1", "k2", "k3", "k4", "left", "right"];
 
 class Connection {
   port;
@@ -31,17 +33,16 @@ class Connection {
 
     port.addEventListener("disconnect", () => {
       console.log("disconnected");
-      connectionState.innerText = "disconnected";
       this.port = null;
     });
   }
 
   canWrite() {
-    return this.writer === undefined;
+    return this.writer !== undefined;
   }
 
   canRead() {
-    return this.reader === undefined;
+    return this.reader !== undefined;
   }
 
   async open() {
@@ -55,17 +56,21 @@ class Connection {
     });
 
     console.log("connected")
-    connectionState.innerText = "connected";
 
     onConnectionOpened();
 
     this.reader = this.port.readable.getReader();
     this.writer = this.port.writable.getWriter();
 
+    await this.exitSettingsMode();  // in case it's still in settings change mode
+    await this.writer.write(new TextEncoder().encode("change settings."));
+    // exit.settings.change settings.
+
     this.read();
   }
 
   close() {
+    console.log("closing");
     this.closeReader();
     this.closeWriter();
     if (this.port !== undefined) {
@@ -76,31 +81,57 @@ class Connection {
   }
 
   async read() {
-    if (this.canRead()) {
+    if (!this.canRead()) {
       console.log("Cannot read, reader is undefined");
       return;
     }
 
-    try {
-      const { value, done } = await this.reader.read();
-      if (done) {
-        console.log("reader died idk");
+    let text = null;
+    while (text === null || (text !== "" && text.split(",").length < 13)) {
+      console.log(text);
+      try {
+        const { value, done } = await this.reader.read();
+        console.log(value);
+        if (done) {
+          console.log("reader died idk");
+          this.closeReader();
+          return;
+        }
+
+        if (text === null) {
+          text = "";
+        }
+
+        text += new TextDecoder().decode(value);
+      } catch (e) {
+        console.log(e)
         this.closeReader();
         return;
       }
-
-      this.handleDeviceOutput(value);
-
-      setTimeout(() => this.read());
-    } catch (e) {
-      console.log(e)
-      this.closeReader();
     }
+
+    console.log(text);
+
+    if (text !== "") {
+      this.handleDeviceOutput(text);
+    }
+
+    setTimeout(() => this.read());
   }
 
-  handleDeviceOutput(value) {
-    const text = new TextDecoder("utf-8").decode(value);
+  handleDeviceOutput(text) {
     console.log(text);
+    const values = text.split(",");
+    console.log(values);
+    this.settings.key5 = convertCodeToString(parseInt(values[0]));
+    this.settings.key6 = convertCodeToString(parseInt(values[1]));
+    this.settings.key1 = convertCodeToString(parseInt(values[2]));
+    this.settings.key2 = convertCodeToString(parseInt(values[3]));
+    this.settings.key3 = convertCodeToString(parseInt(values[4]));
+    this.settings.key4 = convertCodeToString(parseInt(values[5]));
+    this.settings.threshold = parseInt(values[6]);
+    applySettings(this.settings);
+    console.log(this.settings);
   }
 
   closeReader() {
@@ -147,10 +178,15 @@ class Connection {
 
     this.settings[`key${id}`] = key;
 
-    const data = new Uint8Array(3);
-    data[0] = 0x01;
-    data[1] = id;
-    data[2] = convertToKeyCode(key.toLowerCase());
+    // const data = new Uint8Array(3);
+    // data[0] = 0x01;
+    // data[1] = id;
+    // data[2] = convertToKeyCode(key.toLowerCase());
+
+    let data;
+    const [cmd, keyCode] = convertToKeyCode(key);
+    data = new TextEncoder().encode(`${cmd}.${TARGET_NAMES[id-1]}.${keyCode}`);
+    console.log(data);
 
     await this.writer.write(data);
   }
@@ -162,20 +198,26 @@ class Connection {
 
     this.settings.threshold = value;
 
-    const data = new Uint8Array(2)
-    data[0] = 0x02;
-    data[1] = value;
+    // const data = new Uint8Array(2)
+    // data[0] = 0x02;
+    // data[1] = value;
+
+    const data = new TextEncoder().encode("thresh.."+value.toString());
+    console.log(data);
 
     await this.writer.write(data);
   }
 
   async saveSettings() {
     if (!this.canWrite()) {
+      console.log("cannot write");
       return;
     }
 
-    const data = new Uint8Array(1);
-    data[0] = 0x03;
+    // const data = new Uint8Array(1);
+    // data[0] = 0x03;
+
+    const data = new TextEncoder().encode("save.settings.");
 
     await this.writer.write(data);
   }
@@ -192,6 +234,16 @@ class Connection {
     }
 
     await this.setThreshold(this.settings.threshold);
+  }
+
+  async exitSettingsMode() {
+    if (!this.canWrite()) {
+      console.log("cannot write");
+      return;
+    }
+
+    const data = new TextEncoder().encode("exit.settings.");
+    this.writer.write(data);
   }
 }
 
@@ -235,6 +287,21 @@ class KeyButton {
 
     connection.setKey(this.id, key);
   }
+
+  apply(key) {
+    this.displayElm.innerText = key;
+    this.oldValue = key;
+  }
+}
+
+function applySettings(settings) {
+  for (let i=0; i<keyBtns.length; i++) {
+    keyBtns[i].apply(settings[`key${keyBtns[i].id}`]);
+  }
+  touchThresholdInput.value = settings.threshold;
+  touchThresholdDisplay.innerText = settings.threshold;
+
+  onSettingsLoaded();
 }
 
 function exportSettings(settings) {
@@ -266,25 +333,46 @@ function importSettings(settingsString) {
 }
 
 function convertToKeyCode(key) {
-  return 0;
+  key = key.toLowerCase();
+  console.log(key);
+  if (key.length > 1) {
+    if (key.startsWith("f") && !isNaN(parseInt(key.substring(1)))) {
+      return ["fkey", (parseInt(key.substring(1)) + 0xC1).toString()];
+    }
+  } else {
+    return ["key", key];
+  }
+
+  throw Error("this should not be reached!");
+}
+
+function convertCodeToString(code) {
+  if (code >= 0xC2 && code <= 0xC2 + 23) {
+    return `F${code - 0xC1}`;
+  }
+  return String.fromCharCode(code);
 }
 
 function onConnectionOpened() {
-  keypadRow.classList.remove("hidden");
-  disconnectBtn.classList.remove("hidden");
-  saveBtn.classList.remove("hidden");
-  touchThresholdInput.classList.remove("hidden");
-  touchThresholdDisplay.classList.remove("hidden");
-  importExportContainer.classList.remove("hidden");
+  console.log("connection opened");
 }
 
 function onConnectionClosed() {
   keypadRow.classList.add("hidden");
   disconnectBtn.classList.add("hidden");
   saveBtn.classList.add("hidden");
-  touchThresholdInput.classList.add("hidden");
-  touchThresholdDisplay.classList.add("hidden");
+  thresholdContainer.classList.add("hidden");
   importExportContainer.classList.add("hidden");
+}
+
+function onSettingsLoaded() {
+  connectBtn.innerText = "Connect a device";
+  connectBtn.classList.remove("disabled");
+  keypadRow.classList.remove("hidden");
+  disconnectBtn.classList.remove("hidden");
+  saveBtn.classList.remove("hidden");
+  thresholdContainer.classList.remove("hidden");
+  importExportContainer.classList.remove("hidden");
 }
 
 
@@ -303,6 +391,10 @@ export function run() {
 
   // connecting a device event
   connectBtn.addEventListener("click", () => {
+    if (connectBtn.innerText !== "Connect a device") {
+      return;
+    }
+
     connectBtn.innerText = "Connecting...";
     connectBtn.classList.add("disabled");
     navigator.serial
@@ -322,9 +414,17 @@ export function run() {
 
   // disconnecting a device event
   disconnectBtn.addEventListener("click", () => {
+    if (disconnectBtn.innerText !== "Disconnect device") {
+      return;
+    }
+
+    disconnectBtn.innerText = "Disconnecting...";
     if (connection !== null) {
-      connection.close();
-      connection = null;
+      connection.exitSettingsMode().then(() => {
+        connection.close();
+        connection = null;
+        disconnectBtn.innerText = "Disconnect device";
+      });
     }
   });
 
