@@ -1,3 +1,6 @@
+# Boilermake
+This project was done for a 36 hour hackathon called "Boilermake" with a team of 3 people.
+
 # osu! configurable keypad
 A custom-designed keypad for the rhythm game "osu!" with a [website](https://keypad.sheppsu.me) for configuring the keys and touch sensitivity.
 
