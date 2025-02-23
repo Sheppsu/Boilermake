@@ -1,5 +1,7 @@
 # osu! configurable keypad
-A custom-designed keypad for the rhythm game "osu!" with a website for configuring the keys and touch sensitivity.
+A custom-designed keypad for the rhythm game "osu!" with a [website](https://keypad.sheppsu.me) for configuring the keys and touch sensitivity.
+
+![keypad.jpg](keypad.jpg)
 
 ## Inspiration
 Keypads are fairly popular in the osu! community and the design is partly based on the input controller used in another game "Chunithm."
