@@ -1,11 +1,10 @@
-{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Keypad Configuration</title>
 
-    <link rel="stylesheet" type="text/css" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" type="text/css" href="/static/css/styles.css">
 </head>
     <body>
         <div id="page-container">
@@ -60,7 +59,7 @@
             </div>
         </div>
         <script type="module">
-            import { run } from "{% static 'js/main.js' %}";
+            import { run } from "/static/js/main.js";
             run();
         </script>
     </body>
