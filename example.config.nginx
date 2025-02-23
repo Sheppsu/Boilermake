@@ -1,0 +1,19 @@
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+
+    server_name keypad.sheppsu.me;
+
+    location /public {
+        root /home/Boilermake/keypad;
+        autoindex on;
+    }
+
+    location = / {
+        root /home/Boilermake/keypad;
+        try_files /index.html =404;
+    }
+
+    ssl_certificate /etc/letsencrypt/live/keypad.sheppsu.me/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/keypad.sheppsu.me/privkey.pem; # managed by Certbote
+}
