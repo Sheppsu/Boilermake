@@ -25,7 +25,7 @@ We learned about establishing serial communication to a device from a website. W
 Streamlining serial communication and switching to a more robust storage medium in order to support creating and binding multiple macros.
 
 # Repository layout
-- `KappaPad_Chuni` contains the firmware of the keypad
+- `KappaPad_Chuni` contains the firmware of the keypad and CAD file
 - `keypad` contains the static files of the website
 
 ## Running locally
