@@ -30,7 +30,7 @@ hr {
 
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 10px;
 }
 
 #keypad-img {
@@ -182,6 +182,10 @@ hr {
     gap: 10px;
 }
 
+.row-container.wrap {
+    flex-wrap: wrap;
+}
+
 .row-container.center {
     justify-content: center;
 }
@@ -232,6 +236,31 @@ hr {
 
 .std-button.red.disabled:hover {
     background-color: #B94A46;
+}
+
+.std-button.blue {
+    background-color: #4655b9;
+}
+
+.std-button.blue:hover {
+    background-color: #6B77C7;
+}
+
+.std-button.blue.disabled:hover {
+    background-color: #4655b9;
+}
+
+.std-text-input {
+    width: 200px;
+    padding: 5px;
+
+    font-size: 20px;
+
+    border: solid white 2px;
+    border-radius: 10px;
+
+    background-color: #000;
+    color: white;
 }
 
 .hidden {

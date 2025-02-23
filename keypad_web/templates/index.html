@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>test</title>
+    <title>Keypad Configuration</title>
 
     <link rel="stylesheet" type="text/css" href="{% static 'css/styles.css' %}">
 </head>
@@ -13,10 +13,15 @@
                 <h1>Keypad Configuration</h1>
             </div>
             <hr/>
-            <div class="row-container">
+            <div class="row-container wrap">
                 <div id="connect-btn" class="std-button green">Connect a device</div>
                 <div id="disconnect-btn" class="std-button red">Disconnect device</div>
                 <div id="save-btn" class="std-button green">Save</div>
+            </div>
+            <div id="import-export-container" class="row-container wrap">
+                <input id="import-input" type="text" class="std-text-input" placeholder="Settings code">
+                <div id="import-btn" class="std-button blue">Import</div>
+                <div id="export-btn" class="std-button blue">Export</div>
             </div>
             <hr/>
             <div id="keypad-row" class="row-container">
@@ -53,7 +58,7 @@
             <input id="touch-threshold-input" type="range" min="0" max="100">
         </div>
         <script type="module">
-            import { run } from "{% static 'js/test.js' %}";
+            import { run } from "{% static 'js/main.js' %}";
             run();
         </script>
     </body>

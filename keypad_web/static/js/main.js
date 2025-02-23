@@ -1,10 +1,14 @@
 const connectBtn = document.getElementById("connect-btn");
 const disconnectBtn = document.getElementById("disconnect-btn");
 const saveBtn = document.getElementById("save-btn");
+const exportBtn = document.getElementById("export-btn");
+const importBtn = document.getElementById("import-btn");
+const importInput = document.getElementById("import-input");
 const connectionState = document.getElementById("connection-state");
 const keypadRow = document.getElementById("keypad-row");
 const touchThresholdInput = document.getElementById("touch-threshold-input");
 const touchThresholdDisplay = document.getElementById("touch-threshold-display");
+const importExportContainer = document.getElementById("import-export-container");
 
 
 class Connection {
@@ -175,6 +179,20 @@ class Connection {
 
     await this.writer.write(data);
   }
+
+  async replaceSettings(settings) {
+    this.settings = settings;
+    for (const [k, v] of Object.entries(this.settings)) {
+      if (key.startsWith("key")) {
+        const id = parseInt(k.substring(k.length-1));
+        await this.setKey(id, v);
+      } else {
+        break;
+      }
+    }
+
+    await this.setThreshold(this.settings.threshold);
+  }
 }
 
 class KeyButton {
@@ -219,6 +237,34 @@ class KeyButton {
   }
 }
 
+function exportSettings(settings) {
+  const data = new Uint8Array(7);
+  data[0] = settings.key1;
+  data[1] = settings.key2;
+  data[2] = settings.key3;
+  data[3] = settings.key4;
+  data[4] = settings.key5;
+  data[5] = settings.key6;
+  data[6] = settings.threshold;
+  return Object.values(data).map((num) => num.toString(16).padStart(2, "0")).join("");
+}
+
+function importSettings(settingsString) {
+  const data = new Uint8Array(7);
+  for (let i=0; i<data.length; i++) {
+    data[i] = parseInt(settingsString.substring(i*2, i*2+2), 16);
+  }
+  return {
+    key1: data[0],
+    key2: data[1],
+    key3: data[2],
+    key4: data[3],
+    key5: data[4],
+    key6: data[5],
+    threshold: data[6]
+  }
+}
+
 function convertToKeyCode(key) {
   return 0;
 }
@@ -229,6 +275,7 @@ function onConnectionOpened() {
   saveBtn.classList.remove("hidden");
   touchThresholdInput.classList.remove("hidden");
   touchThresholdDisplay.classList.remove("hidden");
+  importExportContainer.classList.remove("hidden");
 }
 
 function onConnectionClosed() {
@@ -237,6 +284,7 @@ function onConnectionClosed() {
   saveBtn.classList.add("hidden");
   touchThresholdInput.classList.add("hidden");
   touchThresholdDisplay.classList.add("hidden");
+  importExportContainer.classList.add("hidden");
 }
 
 
@@ -297,7 +345,7 @@ export function run() {
 
   // clicking the save button
   saveBtn.addEventListener("click", (e) => {
-    if (saveBtn.innerText !== "Save") {
+    if (saveBtn.innerText !== "Save" || connection === null) {
       return;
     }
 
@@ -316,6 +364,50 @@ export function run() {
         saveBtn.innerText = "Save";
         saveBtn.classList.remove("disabled");
       }, 3000);
+    });
+  });
+
+  // handle export button clicks
+  exportBtn.addEventListener("click", (e) => {
+    if (exportBtn.innerText !== "Export" || connection === null) {
+      return;
+    }
+
+    exportBtn.innerText = "Exporting...";
+
+    navigator.clipboard.writeText(exportSettings(connection.settings)).then(() => {
+      exportBtn.innerText = "Copied to clipboard";
+      setTimeout(() => {
+        exportBtn.innerText = "Export";
+      }, 3000);
+    }).catch((e) => {
+      console.log(e);
+      exportBtn.innerText = "Error copying to clipboard...";
+      setTimeout(() => {
+        exportBtn.innerText = "Export";
+      });
+    });
+  });
+
+  // handle importing button clicks
+  importBtn.addEventListener("click", (e) => {
+    if (importBtn.innerText !== "Import" || connection === null) {
+      return;
+    }
+
+    importBtn.innerText = "Importing...";
+    const settings = importSettings(importInput.value);
+    connection.replaceSettings(settings).then(() => {
+      importBtn.innerText = "Imported!";
+      setTimeout(() => {
+        importBtn.innerText = "Import";
+      }, 3000);
+    }).catch((e) => {
+      console.log(e);
+      importBtn.innerText = "Error";
+      setTimeout(() => {
+        importBtn.innerText = "Import";
+      });
     });
   });
 }
