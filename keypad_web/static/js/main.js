@@ -123,12 +123,12 @@ class Connection {
     console.log(text);
     const values = text.split(",");
     console.log(values);
-    this.settings.key5 = convertCodeToString(parseInt(values[0]));
-    this.settings.key6 = convertCodeToString(parseInt(values[1]));
-    this.settings.key1 = convertCodeToString(parseInt(values[2]));
-    this.settings.key2 = convertCodeToString(parseInt(values[3]));
-    this.settings.key3 = convertCodeToString(parseInt(values[4]));
-    this.settings.key4 = convertCodeToString(parseInt(values[5]));
+    this.settings.key5 = convertCodeToString(parseInt(values[0]), parseInt(values[7]));
+    this.settings.key6 = convertCodeToString(parseInt(values[1]), parseInt(values[8]));
+    this.settings.key1 = convertCodeToString(parseInt(values[2]), parseInt(values[9]));
+    this.settings.key2 = convertCodeToString(parseInt(values[3]), parseInt(values[10]));
+    this.settings.key3 = convertCodeToString(parseInt(values[4]), parseInt(values[11]));
+    this.settings.key4 = convertCodeToString(parseInt(values[5]), parseInt(values[12]));
     this.settings.threshold = parseInt(values[6]);
     applySettings(this.settings);
     console.log(this.settings);
@@ -184,11 +184,11 @@ class Connection {
     // data[2] = convertToKeyCode(key.toLowerCase());
 
     let data;
-    const [cmd, keyCode] = convertToKeyCode(key);
-    data = new TextEncoder().encode(`${cmd}.${TARGET_NAMES[id-1]}.${keyCode}`);
-    console.log(data);
-
-    await this.writer.write(data);
+    const commands = convertToKeyCode(key);
+    for (const [cmd, keyCode] of commands) {
+      data = new TextEncoder().encode(`${cmd}.${TARGET_NAMES[id-1]}.${keyCode}`);
+      await this.writer.write(data);
+    }
   }
 
   async setThreshold(value) {
@@ -277,15 +277,29 @@ class KeyButton {
     this.changing = false;
   }
 
-  onKeyPress(key) {
-    if (!this.changing) {
+  onKeyPress(e) {
+    const key = e.key;
+    if (!this.changing || key === "Alt" || key === "Shift" || key === "Control") {
       return;
     }
 
-    this.oldValue = key;
+    const keys = [];
+    if (e.ctrlKey) {
+      keys.push("ctrl");
+    }
+    if (e.altKey) {
+      keys.push("alt");
+    }
+    if (e.shiftKey) {
+      keys.push("shift");
+    }
+    keys.push(key);
+
+    const finalKey = keys.join(",");
+    this.oldValue = finalKey;
     this.cancelChange();
 
-    connection.setKey(this.id, key);
+    connection.setKey(this.id, finalKey);
   }
 
   apply(key) {
@@ -337,20 +351,36 @@ function convertToKeyCode(key) {
   console.log(key);
   if (key.length > 1) {
     if (key.startsWith("f") && !isNaN(parseInt(key.substring(1)))) {
-      return ["fkey", (parseInt(key.substring(1)) + 0xC1).toString()];
+      return [["fkey", (parseInt(key.substring(1)) + 0xC1).toString()]];
     }
-  } else {
-    return ["key", key];
-  }
 
-  throw Error("this should not be reached!");
+    const keys = key.split(",");
+    return [
+        ["mod", (keys.includes("shift") ? 1 : 0) + (keys.includes("ctrl") ? 2 : 0) + (keys.includes("alt") ? 4 : 0)],
+        convertToKeyCode(keys[keys.length - 1])[0]
+    ];
+  } else {
+    return [["key", key]];
+  }
 }
 
-function convertCodeToString(code) {
+function convertCodeToString(code, mods) {
+  const MODS = ["shift", "ctrl", "alt"];
+
+  const keys = [];
   if (code >= 0xC2 && code <= 0xC2 + 23) {
-    return `F${code - 0xC1}`;
+    keys.push(`F${code - 0xC1}`);
+  } else {
+    keys.push(String.fromCharCode(code));
   }
-  return String.fromCharCode(code);
+
+  for (let i=0; i<3; i++) {
+    if ((mods & (1 << i)) !== 0) {
+      keys.push(MODS[i]);
+    }
+  }
+
+  return keys.join(",");
 }
 
 function onConnectionOpened() {
@@ -431,7 +461,7 @@ export function run() {
   // clicking a key button
   document.addEventListener("keydown", (e) => {
     for (const keyBtn of keyBtns) {
-      keyBtn.onKeyPress(e.key);
+      keyBtn.onKeyPress(e);
     }
   });
 
