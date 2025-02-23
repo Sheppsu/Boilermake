@@ -27,24 +27,25 @@ void emptySerial() {
   }
 }
 
-int targetToCode(string target) {
-  if (target == "left") {return 0}
-  else if (target == "right") {return 1}
-  else if (target == "k1") {return 2}
-  else if (target == "k2") {return 3}
-  else if (target == "k3") {return 4}
-  else if (target == "k4") {return 5}
+int targetToCode(String target) {
+  if (target == "left") {return 0;}
+  else if (target == "right") {return 1;}
+  else if (target == "k1") {return 2;}
+  else if (target == "k2") {return 3;}
+  else if (target == "k3") {return 4;}
+  else if (target == "k4") {return 5;}
+  return 6;
 }
 
 void settingsMode() {
-  string command = "";
-  string target = "";
+  String command = "";
+  String target = "";
   int targetCode = 0;
   int stillSetting = 1;
   while (stillSetting) {
     while(!Serial.available()){}
     //commands should be formatted as <command>.<target>.<value> where value is an ascii character
-    //<command> can be any of the strings in the if(command == "<string>") blocks below
+    //<command> can be any of the Strings in the if(command == "<String>") blocks below
     //<target> must be which keypad key is being changed (left, right, k1, k2, k3, k4) for both the 'key' and 'mod' commands
     //<value> is specified in it's command's if() block, not needed for save or exit
     command = Serial.readStringUntil('.');
@@ -72,7 +73,7 @@ void settingsMode() {
       EEPROM.write(6, Serial.parseInt(SKIP_ALL));
     }
     else if (command == "save") {
-      //<target> should probably not be blank, I suggest the string "settings"
+      //<target> should probably not be blank, I suggest the String "settings"
       EEPROM.commit();
       delay(1000);
     }
@@ -96,6 +97,9 @@ void doWeChangeSettings() {
       sendConfig();
       Serial.flush();
       settingsMode();
+      emptySerial();
+      Serial.flush();
+      doWeNeedToRead = 1;
     }
   }
 }

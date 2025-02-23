@@ -15,13 +15,15 @@
 #define SENSE_X 16
 
 #define SEND_NORMAL 15
-#define SENSE_C 13
-#define SENSE_ESC 14
-#define SENSE_RANDOM 12
-#define SENSE_REWIND 11
+#define SENSE_C 12
+#define SENSE_ESC 11
+#define SENSE_RANDOM 13
+#define SENSE_REWIND 14
 //#define SENSE_GLHF 13
 #define GLHF 72727
 //#define SENSE_ENTER 12
+
+int doWeNeedToRead = 1;
 
 #include "PicoCapSensing.h"
 #include <Adafruit_TinyUSB.h>
@@ -36,7 +38,6 @@
 // ║  rew   ║  rand  ║    c   ║   esc  ║
 // ╚════════╩════════╩════════╩════════╝
 
-int doWeNeedToRead = 1;
 // these are the default values of config stored in EEPROM
 //vars are in this order from EEPROM addr 0 to 12
 int left = 'z';
